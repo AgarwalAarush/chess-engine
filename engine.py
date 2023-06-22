@@ -1,4 +1,5 @@
 import chess
+import numpy
 import random
 import stockfish
 
@@ -19,7 +20,7 @@ def random_board(max_depth=150):
 # Stockfish Score
 # reminder: move stockfish exe into path before building & deploying
 stockfish = stockfish.Stockfish(path="../../../../../opt/homebrew/Cellar/stockfish/15.1/bin/stockfish")
-def stockfish_score(board, depth):
+def stockfish_score(board, depth=15):
     stockfish.set_position([move.uci() for move in list(board.move_stack)])
     stockfish.set_depth(depth)
     return stockfish.get_evaluation()['value']
@@ -70,3 +71,19 @@ def board_numerical_representation(board):
         defined_board[13][idx[1]][idx[0]] = 1
 
     return defined_board;
+
+# Database Creation
+import pandas
+def create_dataset(size=50):
+    dataset = []
+    for i in range(size):
+        board = random_board();
+        defined_board = board_numerical_representation(board);
+        score = stockfish_score(board)
+        dataset.append((defined_board, score))
+    return dataset
+
+def increase_dataset_size(size=50):
+    df = pandas.DataFrame(create_dataset(size), columns=["board", "stockfish_score"])
+    df.to_csv("resources/chess-engine-data.csv", mode='a', index=False, header=False)
+
